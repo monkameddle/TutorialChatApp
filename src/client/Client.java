@@ -12,7 +12,7 @@ import java.util.Scanner;
 public class Client {
 
     private static final int PORT = 12345;
-    private static final String IP = "localhost";
+    private static final String IP = "91.99.184.4";
 
     public static Socket socket;
 
