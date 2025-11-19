@@ -7,65 +7,22 @@ import java.util.HashMap;
 
 public class Server {
 
-  //der soll nun auch Nachrichten senden zu können
-  public static final HashMap<Integer, ClientHandler> CLIENT_IDS = new HashMap<>();
+    public static final HashMap<String, ClientHandler> CLIENTS = new HashMap<>();
+    private static final int PORT = 12345;
 
-  /*
-  Client -> IP:Port
-  * "Verbindungselement" -> Zum verbinden
+    static void main() {
+        try {
+            var serverSocket = new ServerSocket(PORT);
+            System.out.println("Chat Server gestartet auf Port " + PORT);
 
-  Server: Port
-  "Verbindungselement" -> Zum Verbindungen empfangen
+            while (true) {
+                Socket socket = serverSocket.accept();
+                var handler = new ClientHandler(socket);
+                new Thread(handler).start();
+            }
 
-  Allgemein:
-  - Nachrichten von der Tastatur / Userinput einzulesen und zu senden
-
-  * */
-
-
-  private static final int PORT = 12345;
-
-  private static ServerSocket serverSocket;
-
-  static void main() {
-
-    try {
-
-
-      serverSocket = new ServerSocket(PORT);
-
-    } catch (IOException exception) {
-
-      throw new RuntimeException(exception);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
-
-    IO.println("ChatSystem Server erstellt!");
-
-    var id = 0;
-
-
-    while (true) {
-      try {
-        Socket socket = serverSocket.accept();
-
-
-        IO.println(
-            "Client-Verbindung empfangen!" +
-                " IP vom Client: "
-                + socket.getRemoteSocketAddress()
-        );
-
-        var client = new ClientHandler(socket, id);
-
-
-        new Thread(client).start();
-
-        CLIENT_IDS.put(id, client);
-        id++;
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-  }
 }

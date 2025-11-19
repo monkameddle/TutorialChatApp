@@ -1,47 +1,58 @@
 package client;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class Client {
 
-  //der soll nun auch nachrichten Empfangen können
+    private static final int PORT = 12345;
+    private static final String IP = "localhost";
 
+    public static Socket socket;
 
+    static void main() {
+        try {
+            socket = new Socket(IP, PORT);
+            IO.println("Verbindung mit Server hergestellt auf Port:" + PORT);
 
-  private static final int PORT = 12345;
+            var writer = new PrintWriter(
+                    new BufferedWriter(
+                            new OutputStreamWriter(
+                                    socket.getOutputStream())), true);
 
-  private static final String IP = "localhost";
+            var reader = new BufferedReader(
+                    new InputStreamReader(
+                            socket.getInputStream()));
 
-  public static Socket socket;
+            // Thread zum Empfangen
+            new Thread(() -> {
+                try {
+                    String incoming;
+                    while ((incoming = reader.readLine()) != null) {
+                        IO.println("Server sendet: " + incoming);
+                    }
+                } catch (IOException e) {
+                    IO.println("Verbindung beendet");
+                }
+            }).start();
 
-  static void main() {
+            var scanner = new Scanner(System.in);
 
-    try {
-      socket = new Socket(IP, PORT);
-      IO.println("Verbindung mit Server hergestellt auf Port:" + PORT);
+            // Senden läuft weiter im Hauptthread
+            while (true) {
+                var message = scanner.nextLine();
+                IO.println("Wir schicken an den Server: " + message);
+                writer.println(message);
+            }
 
-
-      var scanner = new Scanner(System.in);
-      var writer = new PrintWriter(
-          new BufferedWriter(
-              new OutputStreamWriter(
-                  socket.getOutputStream())), true);
-      while (true) {
-        var message = scanner.nextLine();
-        IO.println("Wir schicken an den Server: " + message);
-        writer.println(message);
-      }
-
-
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
-
-
-  }
 }
